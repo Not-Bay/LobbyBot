@@ -1,0 +1,47 @@
+{
+    "cogs": ["admin", "commands", "events", "settings", "custom"],
+    "token": "",
+    "prefix": "!",
+    "db_connectionstr": "",
+    "webhook": "",
+    "invite": "",
+    "debug": true,
+    "staff_ids": [
+    ],
+    "session_timeout": 1200,
+    "custom_session_timeout": 2400,
+
+    "default_config": {
+        "level": 100,
+        "banner": "BRSeason01",
+        "bannercolor": "DefaultColor15",
+        "status": "LobbyBot Beta 1.7",
+        "outfits": [
+            "CID_028_Athena_Commando_F",
+            "CID_636_Athena_Commando_M_GalileoGondola_78MFZ",
+            "CID_NPC_Athena_Commando_M_CatBurglar_Ghost",
+            "CID_175_Athena_Commando_M_Celestial",
+            "CID_434_Athena_Commando_F_StealthHonor",
+            "CID_313_Athena_Commando_M_KpopFashion",
+            "CID_703_Athena_Commando_M_Cyclone"
+        ],
+        "emotes": [
+            "EID_HipHop01",
+            "EID_KpopDance03",
+            "EID_GoodVibes",
+            "EID_GasStation_104FQ",
+            "EID_LasagnaDance",
+            "EID_ModerateAmount_9LUN1",
+            "EID_"
+        ],
+        "backpacks": [
+            "BID_138_Celestial",
+            "BID_004_BlackKnight",
+            "BID_"
+        ],
+        "pickaxes": [
+            "Pickaxe_ID_013_Teslacoil",
+            "Pickaxe_ID_294_CandyCane"
+        ]
+    }
+}

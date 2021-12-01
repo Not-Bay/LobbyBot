@@ -1,0 +1,7 @@
+discord.py
+fortnitepy
+crayons
+pymongo
+requests
+coloredlogs
+discord-components
