@@ -1,3 +1,3 @@
-# LobbyBot Source code
+# LobbyBot
 
-I have no motivation to continue its development.
+A temporary lobby bots network
