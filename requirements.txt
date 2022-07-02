@@ -1,7 +1,4 @@
-discord.py
-fortnitepy
-crayons
-pymongo
-requests
-coloredlogs
-discord-components
+coloredlogs==15.0.1
+py-cord==2.0.0rc1
+orjson==3.7.5
+uvloop==0.16.0; platform_system != "Windows"

@@ -1,62 +1,86 @@
-# pylint: disable=maybe-no-member
-from discord.ext import commands
-from discord_components import *
-import discord
-
-import time
+import coloredlogs
 import traceback
-import crayons
-import util
+import discord
+import asyncio
+import logging
+import orjson
+import sys
 
+if '--debug' in sys.argv:
+    log_level = logging.DEBUG
+else:
+    log_level = logging.INFO
 
-boot_timestamp = time.time()
-util.discord_log('Booting...')
+__version__ = '2.0alpha'
 
-util.log(f'{crayons.cyan("Starting LobbyBot")}')
-util.log(f'Debug enabled', 'debug')
+if __name__ == '__main__':
 
-intents = discord.Intents.default()
-intents.members = True
+    log = logging.getLogger('LobbyBot.main')
 
-bot = commands.AutoShardedBot(
-    command_prefix = util.get_prefix,
-    intents = intents
-)
-bot.remove_command('help')
+    for logger in list(logging.Logger.manager.loggerDict):
+        if logger.startswith('LobbyBot') == False:
+            logging.getLogger(logger).disabled = True
 
-@bot.event
-async def on_connect():
-    util.log('Connected to discord', 'debug')
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name=f"Booting..."), status=discord.Status.idle)
+    # file output
+    file_handler = logging.FileHandler('logs.log')
+    file_handler.setLevel(log_level)
+    logging.getLogger('LobbyBot').addHandler(file_handler)
 
-@bot.event
-async def on_ready():
-    DiscordComponents(bot)
+    # Colored output
+    coloredlogs.install(level = log_level)
 
-    for guild in bot.guilds:
-        util.store_guild(guild)
+    # initialization
+    try:
+        log.debug('loading configuration...')
+        with open('config.json', 'r', encoding='utf-8') as f:
+            config = orjson.loads(f.read())
+    except:
+        log.critical(f'Unable to load config file. {traceback.format_exc()}')
+        sys.exit(1)
 
-    util.log('Loading cogs...')
-    cogs = util.get_config()['cogs']
-    for i in cogs:
+    bot = discord.Bot(
+        debug_guilds = config.get('debug_guilds', None),
+        auto_sync_commands = config.get('auto_sync_commands', False),
+        intents = discord.Intents.default()
+    )
+    bot.config = config
+    bot.version = __version__
+
+    log.debug('loading cogs...')
+    for cog in config.get('cogs', []):
         try:
-            bot.load_extension(f'cogs.{i}')
-            util.log(f'Loaded "{i}"', 'debug')
-        except Exception:
-            util.log(f'Could not load cog "{i}": {crayons.red(traceback.format_exc())}', 'error')
+            bot.load_extension(f'cogs.{cog}')
+            log.debug(f'loaded cog "{cog}".')
+        except:
+            log.error(f'Unable to load cog "{cog}". {traceback.format_exc()}')
+    
+    log.debug(f'{len(bot.extensions)}/{len(config.get("cogs", []))} cogs loaded.')
 
-    util.log('Starting status...')
-    bot.loop.create_task(util.discord_bot_status_loop(bot))
+    # setup uvloop
+    try:
+        import uvloop # type: ignore
+        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+        log.debug('using uvloop event loop policy.')
+    except:
+        log.debug('unable to setup uvloop, using default event loop policy.')
 
-    util.log('Setting accounts as unused...')
-    while True:
-        account = util.database.credentials.find_one_and_update({"active": True}, {"$set": {"active": False}})
-        if account == None:
-            break
+    # start
 
-    util.log(f'{crayons.white("|", bold=True)} Discord bot is ready as {crayons.green(bot.user, bold=True)} - {bot.user.id} {crayons.white("|", bold=True)}')
+    log.info('Starting...')
 
-    util.discord_log(f'LobbyBot is ready!')
+    loop = asyncio.get_event_loop()
 
-super_secret_token = util.get_config()['token']
-bot.run(super_secret_token)
+    try:
+        loop.run_until_complete(bot.start(config.get('bot_token')))
+
+    except KeyboardInterrupt:
+        log.info('KeyboardInterrupt, exiting...')
+        loop.run_until_complete(bot.close())
+
+    except Exception:
+        log.critical(f'An unknown error ocurred: {traceback.format_exc()}')
+        loop.run_until_complete(bot.close())
+
+    finally:
+        loop.close()
+        sys.exit()
