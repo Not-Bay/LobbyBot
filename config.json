@@ -3,7 +3,8 @@
     "debug_guilds": [],
     "auto_sync_commands": true,
     "cogs": [
-        "events"
+        "events",
+        "account"
     ],
     "database": {
         "connection_string": null,
