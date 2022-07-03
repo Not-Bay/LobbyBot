@@ -19,5 +19,7 @@ class Events(commands.Cog):
 
         log.info('Discord bot is ready.')
 
+        database_start = await self.bot.database._initialize()
+
 def setup(bot: discord.Bot):
     bot.add_cog(Events(bot))

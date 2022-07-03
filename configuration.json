@@ -1,8 +1,0 @@
-{
-    "bot_token": "",
-    "debug_guilds": [],
-    "auto_sync_commands": false,
-    "cogs": [
-        "events"
-    ]
-}

@@ -6,6 +6,8 @@ import logging
 import orjson
 import sys
 
+from modules import database
+
 if '--debug' in sys.argv:
     log_level = logging.DEBUG
 else:
@@ -47,6 +49,7 @@ if __name__ == '__main__':
         auto_sync_commands = config.get('auto_sync_commands', False),
         intents = discord.Intents.default()
     )
+    bot.database = database.DatabaseClient(config.get('database'))
     bot.config = config
     bot.version = __version__
 

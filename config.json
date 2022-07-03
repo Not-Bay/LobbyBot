@@ -1,0 +1,12 @@
+{
+    "bot_token": "",
+    "debug_guilds": [],
+    "auto_sync_commands": true,
+    "cogs": [
+        "events"
+    ],
+    "database": {
+        "connection_string": null,
+        "name": "lobbybot"
+    }
+}
