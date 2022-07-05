@@ -27,7 +27,7 @@ if __name__ == '__main__':
     file_handler = logging.FileHandler('logs.log')
     file_handler.setLevel(log_level)
     
-    formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
+    formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(name)s | %(message)s')
     file_handler.setFormatter(formatter)
 
     logging.getLogger('LobbyBot').addHandler(file_handler)
