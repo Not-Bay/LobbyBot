@@ -10,6 +10,10 @@ class Colors:
     Blue = 0x2173c4
     Yellow = 0xd1c926
 
+class Emojis:
+
+    Loading = '<a:loading:815646116154310666>'
+
 def get_future_result(future: asyncio.Future) -> any:
 
     if future.exception() != None:

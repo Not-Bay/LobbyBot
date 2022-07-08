@@ -2,7 +2,6 @@ from discord import Message
 import fortnitepy
 import logging
 
-from .events import *
 from .client_utils import *
 
 log = logging.getLogger('LobbyBot.modules.fortnite.client')
@@ -34,8 +33,6 @@ class AuthClient(fortnitepy.Client):
             os = config.get('os'),
             cache_users = False
         )
-
-        self.add_event_handler('event_ready', event_ready)
 
     def identifier(self):
         try:
@@ -69,11 +66,20 @@ class FortniteClient(fortnitepy.Client):
             cache_users = False
         )
 
-        self.add_event_handler('event_ready', event_ready)
-        self.add_event_handler('event_before_close', event_before_close)
-
     def identifier(self):
         try:
             return self.user.id
         except:
             return self
+
+    async def event_ready(self: fortnitepy.Client) -> None:
+
+        log.debug(f'{self.identifier()} dispatched "event_ready"')
+
+    async def event_before_close(self: fortnitepy.Client) -> None:
+
+        log.debug(f'[{self.identifier()}] dispatched "event_before_close".')
+
+    async def handle_message(self: fortnitepy.Client, message: Message) -> None:
+
+        log.debug(f'[{self.identifier()}] handling message "{message.content}"...')
