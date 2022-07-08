@@ -118,3 +118,5 @@ class Session:
                 await self.stop()
 
                 break
+
+        log.debug(f'[{self.identifier()}] Message handler finished.')

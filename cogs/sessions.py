@@ -86,6 +86,14 @@ class Sessions(commands.Cog):
                     embed = embed
                 )
 
+                await ctx.respond(
+                    embed = discord.Embed(
+                        description = 'Your bot should be starting, check your direct messages.',
+                        color = utils.Colors.Blue
+                    ),
+                    ephemeral = True
+                )
+
             except discord.errors.Forbidden:
 
                 embed = discord.Embed(
@@ -94,6 +102,15 @@ class Sessions(commands.Cog):
                 )
                 embed.set_footer(text = 'Settings > Privacy & Safety > Allow direct messages from server members')
 
+                await accounts.update_one(
+                    filter = {
+                        'account_id': session.auth['account_id']
+                    },
+                    update = {
+                        'in_use': False
+                    }
+                )
+
                 return await ctx.respond(
                     embed = embed   
                 )
@@ -101,6 +118,15 @@ class Sessions(commands.Cog):
             initialize = await session.initialize()
 
             if initialize != True:
+
+                await accounts.update_one(
+                    filter = {
+                        'account_id': session.auth['account_id']
+                    },
+                    update = {
+                        'in_use': False
+                    }
+                )
 
                 return await message.edit(
                     embed = discord.Embed(
