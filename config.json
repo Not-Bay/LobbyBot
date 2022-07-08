@@ -5,6 +5,7 @@
     "cogs": [
         "events",
         "account",
+        "sessions",
         "admin"
     ],
     "database": {
@@ -13,13 +14,14 @@
     },
     "fortnite": {
         "ios_token": "M2Y2OWU1NmM3NjQ5NDkyYzhjYzI5ZjFhZjA4YThhMTI6YjUxZWU5Y2IxMjIzNGY1MGE2OWVmYTY3ZWY1MzgxMmU=",
-        "build": "++Fortnite+Release-21.10-CL-20805132",
+        "build": "++Fortnite+Release-21.20-CL-20938145",
         "os": "Android/12",
         "message_timeout": 300,
         "login_timeout": 10,
         "logout_timeout": 5,
         "platform": "pc",
         "party": {
+            "chat_enabled": true,
             "privacy": "public",
             "max_size": 16
         }
