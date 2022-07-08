@@ -1,5 +1,7 @@
 import coloredlogs
+import fortnitepy
 import traceback
+import platform
 import discord
 import asyncio
 import logging
@@ -35,6 +37,12 @@ if __name__ == '__main__':
     # Colored output
     coloredlogs.install(level = log_level)
 
+    # Initial log
+    log.info(f'LobbyBot v{__version__}')
+    log.info(f'Python {platform.python_version()} on {sys.platform}')
+    log.info(f'fortnitepy {fortnitepy.__version__}')
+    log.info(f'py-cord {discord.__version__}')
+
     # initialization
     try:
         log.debug('loading configuration...')
@@ -52,6 +60,7 @@ if __name__ == '__main__':
     bot.database = database.DatabaseClient(config.get('database'))
     bot.config = config
     bot.version = __version__
+    bot.sessions = list()
 
     log.debug('loading cogs...')
     for cog in config.get('cogs', []):
@@ -73,7 +82,7 @@ if __name__ == '__main__':
 
     # start
 
-    log.info('Starting...')
+    log.debug('starting loop...')
 
     loop = asyncio.get_event_loop()
 
