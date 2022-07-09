@@ -86,6 +86,8 @@ class Sessions(commands.Cog):
                     embed = embed
                 )
 
+                self.bot.sessions.append(session)
+
                 await ctx.respond(
                     embed = discord.Embed(
                         description = 'Your bot should be starting, check your direct messages.',
@@ -176,7 +178,9 @@ class Sessions(commands.Cog):
     ):
 
         for session in self.bot.sessions:
-            if session.user.id == ctx.atuhor.id:
+            if session.user.id == ctx.author.id:
+
+                await ctx.defer()
 
                 accounts = await self.bot.database.get_collection('accounts')
 
@@ -184,7 +188,7 @@ class Sessions(commands.Cog):
                 await session.stop()
 
                 # remove from global cache
-                self.bot.sessions.pop(session)
+                self.bot.sessions.remove(session)
 
                 # make the account usable again
                 await accounts.update_one(

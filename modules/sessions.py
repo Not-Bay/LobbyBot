@@ -73,7 +73,7 @@ class Session:
 
         logout_timeout = self.config.get('logout_timeout', 5)
         try:
-            await asyncio.wait_for(self.client.event_before_close(), timeout=logout_timeout)
+            await asyncio.wait_for(self.client.wait_until_closed(), timeout=logout_timeout)
 
             self.client = None
             self.task = None
@@ -97,11 +97,11 @@ class Session:
 
         # process only private messages from user
         def check(message: discord.Message):
-            return (message.author.id == self.user.id) and (message.channel.is_private() == True)
+            return message.author.id == self.user.id and message.channel.is_private() == True
 
         message_timeout = self.config.get('message_timeout', 300)
 
-        while self.task != None:
+        while True:
 
             try:
                 message = await self.bot.wait_for(
