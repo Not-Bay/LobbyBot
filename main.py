@@ -72,14 +72,6 @@ if __name__ == '__main__':
     
     log.debug(f'{len(bot.extensions)}/{len(config.get("cogs", []))} cogs loaded.')
 
-    # setup uvloop
-    try:
-        import uvloop # type: ignore
-        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-        log.debug('using uvloop event loop policy.')
-    except:
-        log.debug('unable to setup uvloop, using default event loop policy.')
-
     # start
 
     log.debug('starting loop...')
