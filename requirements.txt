@@ -1,3 +1,4 @@
+cryptography==38.0.1
 coloredlogs==15.0.1
 fortnitepy==3.6.7
 py-cord==2.1.3

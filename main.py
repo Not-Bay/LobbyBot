@@ -9,12 +9,12 @@ import orjson
 import sys
 
 from modules.sessions import SessionManager
-from modules import database
+from modules import database, crypto
 
 if '--debug' in sys.argv:
     log_level = logging.DEBUG
-else:
-    log_level = logging.INFO
+if '--prod' in sys.argv:
+    log_level = logging.ERROR
 
 __version__ = '2.0alpha'
 
@@ -83,7 +83,8 @@ if __name__ == '__main__':
     loop = asyncio.get_event_loop()
 
     try:
-        loop.run_until_complete(bot.start(config.get('bot_token')))
+        token = crypto.decrypt_string(config.get('bot_token').encode(), sys.argv[2].encode())
+        loop.run_until_complete(bot.start(token.decode()))
 
     except KeyboardInterrupt:
         log.info('KeyboardInterrupt, exiting...')

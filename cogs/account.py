@@ -4,6 +4,8 @@ import logging
 import discord
 import time
 
+from modules import crypto
+
 log = logging.getLogger('LobbyBot.cogs.account')
 
 class Account(commands.Cog):
@@ -29,7 +31,7 @@ class Account(commands.Cog):
 
         result = await users.find_one(
             filter = {
-                'user_id': ctx.author.id
+                'id': crypto.sha1(str(ctx.author.id))
             }
         )
 
@@ -46,9 +48,10 @@ class Account(commands.Cog):
 
         insert = await users.insert_one(
             document = {
-                'user_id': ctx.author.id,
+                'id': crypto.sha1(str(ctx.author.id)),
                 'added': int(time.time()),
-                'banned': False
+                'banned': False,
+                'accounts': {}
             }
         )
 
@@ -88,7 +91,7 @@ class Account(commands.Cog):
 
         result = await users.find_one(
             filter = {
-                'user_id': ctx.author.id
+                'id': crypto.sha1(str(ctx.author.id))
             }
         )
 
@@ -107,7 +110,7 @@ class Account(commands.Cog):
 
         delete = await users.delete_one( 
             filter = {
-                'user_id': ctx.author.id
+                'id': crypto.sha1(str(ctx.author.id))
             }
         )
 
