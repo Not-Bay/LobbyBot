@@ -58,13 +58,17 @@ if __name__ == '__main__':
         auto_sync_commands = config.get('auto_sync_commands', False),
         intents = discord.Intents.default()
     )
-    bot.database = database.DatabaseClient(config.get('database'))
     bot.config = config
     bot.version = __version__
     bot.sessions = SessionManager(
         max_sessions = config.get('max_sessions', 100),
         allow_new_sessions = config.get('allow_new_sessions', True)
     )
+
+    bot.database = database.DatabaseClient(config.get('database'))
+    if bot.database.initialize() == False:
+        log.fatal('Database initialization failed.')
+        exit()
 
     log.debug('loading cogs...')
     for cog in config.get('cogs', []):

@@ -12,7 +12,7 @@ class DatabaseClient:
 
         self.config = config
 
-    async def _initialize(self) -> bool:
+    def initialize(self) -> bool:
 
         log.info('Connecting to database...')
 
