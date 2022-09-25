@@ -58,6 +58,7 @@ if __name__ == '__main__':
         auto_sync_commands = config.get('auto_sync_commands', False),
         intents = discord.Intents.default()
     )
+    bot.ekey = sys.argv[2]
     bot.config = config
     bot.version = __version__
     bot.sessions = SessionManager(
@@ -87,7 +88,7 @@ if __name__ == '__main__':
     loop = asyncio.get_event_loop()
 
     try:
-        token = crypto.decrypt_string(config.get('bot_token').encode(), sys.argv[2].encode())
+        token = crypto.decrypt_string(config.get('bot_token').encode(), bot.ekey.encode())
         loop.run_until_complete(bot.start(token.decode()))
 
     except KeyboardInterrupt:
