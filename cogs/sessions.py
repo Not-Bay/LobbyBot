@@ -86,7 +86,7 @@ class Sessions(commands.Cog):
                     embed = embed
                 )
 
-                self.bot.sessions.append(session)
+                self.bot.sessions.add_session(session)
 
                 await ctx.respond(
                     embed = discord.Embed(
@@ -187,8 +187,8 @@ class Sessions(commands.Cog):
                 # stop session
                 await session.stop()
 
-                # remove from global cache
-                self.bot.sessions.remove(session)
+                # remove from sessions manager
+                self.bot.sessions.remove_session(session)
 
                 # make the account usable again
                 await accounts.update_one(

@@ -120,3 +120,39 @@ class Session:
                 break
 
         log.debug(f'[{self.identifier()}] Message handler finished.')
+
+class SessionManager:
+    def __init__(self, max_sessions: int, allow_new_sessions: bool = True) -> None:
+        self.max_sessions = max_sessions
+        self.allow_new_sessions = allow_new_sessions
+
+        self.sessions = dict()
+
+    @property
+    def session_count(self) -> int:
+        return len(self.sessions.keys())
+
+    def get_session(self, user_id: int) -> Session:
+
+        return self.sessions.get(str(user_id), None)
+
+    def add_session(self, session: Session) -> bool:
+
+        if self.allow_new_sessions == False:
+            return False
+
+        if self.session_count >= self.max_sessions:
+            return False
+
+        if self.sessions.get(str(session.user.id), None) != None:
+            return False
+        else:
+            self.sessions[str(session.user.id)] = session
+            return True
+
+    def remove_session(self, session: Session) -> bool:
+
+        if self.get_session(session.user.id) == None:
+            return False
+        else:
+            return self.sessions.pop(session, None)

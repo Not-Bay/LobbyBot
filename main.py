@@ -8,6 +8,7 @@ import logging
 import orjson
 import sys
 
+from modules.sessions import SessionManager
 from modules import database
 
 if '--debug' in sys.argv:
@@ -60,7 +61,10 @@ if __name__ == '__main__':
     bot.database = database.DatabaseClient(config.get('database'))
     bot.config = config
     bot.version = __version__
-    bot.sessions = list()
+    bot.sessions = SessionManager(
+        max_sessions = config.get('max_sessions', 100),
+        allow_new_sessions = config.get('allow_new_sessions', True)
+    )
 
     log.debug('loading cogs...')
     for cog in config.get('cogs', []):
