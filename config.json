@@ -5,8 +5,7 @@
     "cogs": [
         "events",
         "account",
-        "sessions",
-        "admin"
+        "sessions"
     ],
     "database": {
         "connection_string": null,
@@ -14,7 +13,7 @@
     },
     "fortnite": {
         "ios_token": "M2Y2OWU1NmM3NjQ5NDkyYzhjYzI5ZjFhZjA4YThhMTI6YjUxZWU5Y2IxMjIzNGY1MGE2OWVmYTY3ZWY1MzgxMmU=",
-        "build": "++Fortnite+Release-21.20-CL-20938145",
+        "build": "++Fortnite+Release-22.00-CL-22107157",
         "os": "Android/12",
         "message_timeout": 300,
         "login_timeout": 10,
