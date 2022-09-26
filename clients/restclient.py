@@ -25,9 +25,11 @@ class RestClient:
 
         if self.session == None:
             self.session = aiohttp.ClientSession()
+            logging.getLogger('aiohttp.client').disabled = False
 
         headers = {
-            'User-Agent': f'Fortnite/{self.config.get("build")} {self.config.get("os")}'
+            'User-Agent': f'Fortnite/{self.build} {self.os}',
+            'Content-Type': 'application/json'
         }
         for header in list(extra_headers.keys()):
             headers[header] = extra_headers[header]
@@ -57,50 +59,46 @@ class RestClient:
             data = payload
         )
 
-    async def get_device_auths(self, account_id: str):
+    async def get_device_auths(self, access_token: str, account_id: str):
         """List the account device auths
         """
 
         route = http.AccountPublicService(
-            path = '/account/api/public/account/{account_id}/deviceAuth',
-            account_id = account_id
+            path = f'/account/api/public/account/{account_id}/deviceAuth'
         )
 
         return await self.send_request(
             method = 'GET',
             url = route.url,
-            extra_headers = {'Authorization': f'bearer {self.auth_session.get("access_token")}'}
+            extra_headers = {'Authorization': f'bearer {access_token}'}
         )
 
-    async def create_device_auth(self, account_id: str):
+    async def create_device_auth(self, access_token: str, account_id: str):
         """Creates an device auth
         """
 
         route = http.AccountPublicService(
-            path = '/account/api/public/account/{account_id}/deviceAuth',
-            account_id = account_id
+            path = f'/account/api/public/account/{account_id}/deviceAuth'
         )
 
         return await self.send_request(
             method = 'POST',
             url = route.url,
             extra_headers = {
-                'Authorization': f'bearer {self.auth_session.get("access_token")}'
+                'Authorization': f'bearer {access_token}'
             }
         )
 
-    async def delete_device_auth(self, account_id: str, device_id: str):
+    async def delete_device_auth(self, access_token: str, account_id: str, device_id: str):
         """Deletes an device auth
         """
 
         route = http.AccountPublicService(
-            path = '/account/api/public/account/{account_id}/deviceAuth/{device_id}',
-            account_id = account_id,
-            device_id = device_id
+            path = f'/account/api/public/account/{account_id}/deviceAuth/{device_id}'
         )
 
         return await self.send_request(
             method = 'DELETE',
             url = route.url,
-            extra_headers = {'Authorization': f'bearer {self.auth_session.get("access_token")}'}
+            extra_headers = {'Authorization': f'bearer {access_token}'}
         )

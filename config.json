@@ -19,10 +19,8 @@
         "login_timeout": 10,
         "logout_timeout": 5,
         "platform": "pc",
-        "party": {
-            "chat_enabled": true,
-            "privacy": "public",
-            "max_size": 16
-        }
+        "party_chat_enabled": true,
+        "party_privacy": "public",
+        "party_max_size": 16
     }
 }

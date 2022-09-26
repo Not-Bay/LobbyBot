@@ -15,7 +15,7 @@ def encrypt_user_string(user_id: int, ekey: str, string: str) -> bytes:
         bytes: Encrypted data
     """
 
-    user_sha224 = sha224(str(user_id + ekey))[0:32] # get first 32 characters of user_id in sha224
+    user_sha224 = sha224(str(user_id) + ekey)[0:32] # get first 32 characters of user_id in sha224
     encryption_key = b64_encode(user_sha224, urlsafe = True) # base64 of user_id in sha224
     return encrypt_string(string = string, key = encryption_key) # encrypted data
 
@@ -34,7 +34,7 @@ def decrypt_user_string(user_id: int, ekey: str, string: bytes) -> str:
 
     user_sha224 = sha224(str(user_id) + ekey)[0:32] # get first 32 characters of user_id in sha224
     encryption_key = b64_encode(user_sha224, urlsafe = True) # base64 of user_id in sha224
-    return decrypt_string(data = string, key = encryption_key) # decrypted data
+    return decrypt_string(data = string, key = encryption_key).decode() # decrypted data
 
 ## Hashes
 def sha1(string: str) -> str:

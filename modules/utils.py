@@ -3,6 +3,29 @@ import logging
 
 log = logging.getLogger('LobbyBot.modules.utils')
 
+def user_base():
+    return {
+        'id': '',
+        'added': 0,
+        'banned': False,
+        'config': {
+            'status': 'LobbyBot v2.0',
+            'platform': 'pc',
+            'party_chat_enabled': True,
+            'party_privacy': 'public',
+            'party_max_size': 16
+        },
+        'bots': {}
+    }
+
+def bot_base():
+    return {
+        'added': 0,
+        'device_id': '',
+        'account_id': '',
+        'secret': ''
+    }
+
 class Colors:
 
     Red = 0xe62222
@@ -13,14 +36,3 @@ class Colors:
 class Emojis:
 
     Loading = '<a:loading:815646116154310666>'
-
-def get_future_result(future: asyncio.Future) -> any:
-
-    if future.exception() != None:
-        return future.exception()
-
-    try:
-        return future.result()
-
-    except asyncio.CancelledError:
-        return None
