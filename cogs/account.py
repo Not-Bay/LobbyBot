@@ -208,6 +208,17 @@ class Account(commands.Cog):
             )
             return
 
+        if len(result['bots']) >= self.bot.config.get('database')['max_accounts']:
+            await ctx.respond(
+                embed = discord.Embed(
+                    title = 'Oops!',
+                    description = 'You have reached the maximum of accounts saved.',
+                    color = discord.Color.red()
+                ),
+                ephemeral = True
+            )
+            return
+
         if code == 'none':
 
             embed = discord.Embed(

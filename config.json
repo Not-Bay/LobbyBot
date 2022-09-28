@@ -1,6 +1,5 @@
 {
     "bot_token": "gAAAAABjMJ1jKhT3NYpTMhLyqWAATo2sq-9Du5P5cw4k2jbHCLx_kEbO-qUwe8b9z4ek_ySMQkvkAXe_1rqZ3G6zNrHBDysN-yeUfZxDwoCDaRa1THO2RazXs-bWLuuWkh57yjLSXE7rG4cZdhiAuJEsGU5vNmR3lJ5iiZGluybuWWagCBlFH50=",
-    "debug_guilds": [],
     "auto_sync_commands": true,
     "cogs": [
         "events",
@@ -9,7 +8,8 @@
     ],
     "database": {
         "connection_string": null,
-        "name": "lobbybot"
+        "name": "lobbybot",
+        "max_accounts": 3
     },
     "fortnite": {
         "ios_token": "M2Y2OWU1NmM3NjQ5NDkyYzhjYzI5ZjFhZjA4YThhMTI6YjUxZWU5Y2IxMjIzNGY1MGE2OWVmYTY3ZWY1MzgxMmU=",
