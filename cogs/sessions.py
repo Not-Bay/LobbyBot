@@ -1,11 +1,10 @@
 from discord.commands import slash_command
 from discord.ext import commands
-import traceback
 import logging
 import discord
 import asyncio
 
-from modules import sessions, utils
+from modules import crypto, sessions, utils
 
 log = logging.getLogger('LobbyBot.cogs.sessions')
 
@@ -23,150 +22,148 @@ class Sessions(commands.Cog):
         ctx: discord.ApplicationContext
     ):
 
-        for session in self.bot.sessions:
-            if session.user.id == ctx.atuhor.id:
-                return await ctx.respond(
-                    embed = discord.Embed(
-                        description = 'Seems like you already have an bot running. Use `/stop` before starting a new one.',
-                        color = utils.Colors.Yellow
-                    )
-                )
-
-        accounts = await self.bot.database.get_collection('accounts')
-
-        result = await accounts.find_one(
-            filter = {
-                'in_use': False
-            }
-        )
-
-        if result == None:
+        if self.bot.sessions.get_session(ctx.author.id) != None:
             return await ctx.respond(
                 embed = discord.Embed(
-                    description = 'All bots are currently in use, try again later.',
+                    description = 'Seems like you already have an bot running. Use `/stop` before starting a new one.',
                     color = utils.Colors.Yellow
                 )
             )
 
-        log.debug(f'creating session with account {result.get("account_id")}...')
+        collection = await self.bot.database.get_collection('users')
+        user = await collection.find_one(
+            filter = {
+                'id': crypto.sha1(str(ctx.author.id))
+            }
+        )
 
-        try:
+        if user == None:
 
-            update = await accounts.update_one(
-                filter = {
-                    'account_id': result['account_id']
-                },
-                update = {
-                    'in_use': True
-                }
+            await ctx.respond(
+                embed = discord.Embed(
+                    title = 'Oops!',
+                    description = 'You need to register with `/account register` first.',
+                    color = discord.Color.red()
+                )
+            )
+            return
+
+        if len(user['bots']) == 0:
+            
+            await ctx.respond(
+                embed = discord.Embed(
+                    title = 'Oops!',
+                    description = 'You do not have any account added yet, use `/add-bot` to add one.',
+                    color = discord.Color.red()
+                )
+            )
+            return
+
+        elif len(user['bots']) == 1:
+
+            account_index = list(user['bots'].keys())[0]
+            selected_account = user['bots'][account_index]
+
+            await ctx.respond(
+                embed = discord.Embed(
+                    title = 'Start Bot',
+                    description = 'Starting...'
+                )
             )
 
-            if update == False:
-                return await ctx.respond(
-                    embed = discord.Embed(
-                        description = 'Unable to lock assigned bot, try again later.',
-                        color = utils.Colors.Red
+        else:
+
+            options = []
+
+            for account in user['bots']:
+
+                options.append(
+                    discord.SelectOption(
+                        label = crypto.decrypt_user_string(ctx.author.id, self.bot.ekey, user['bots'][account]['display_name']),
+                        value = account
                     )
                 )
 
-            session = sessions.Session(
-                ctx = ctx,
-                account = result
+            view = discord.ui.View(
+                discord.ui.Select(
+                    options = options,
+                    custom_id = 'select_start'
+                ),
+                timeout = 120,
+                disable_on_timeout = True
             )
 
-            embed = discord.Embed(
-                title = 'Starting',
-                description = f'Your bot will be ready in a few seconds {utils.Emojis.Loading}',
-                color = utils.Colors.Blue
+            await ctx.respond(
+                embed = discord.Embed(
+                    title = 'Start Bot',
+                    description = 'Select the bot you want to start:',
+                    color = discord.Color.blue()
+                ),
+                view = view
             )
 
             try:
-                # loading message in user dm
-                message = await ctx.author.send(
-                    embed = embed
+                interaction = await self.bot.wait_for(
+                    'interaction',
+                    check = lambda i: i.user == ctx.author and i.custom_id in 'select_start',
+                    timeout = 120
                 )
+            except asyncio.TimeoutError:
+                return
 
-                self.bot.sessions.add_session(session)
+            selected_account = user['bots'][view.children[0].values[0]]
 
-                await ctx.respond(
-                    embed = discord.Embed(
-                        description = 'Your bot should be starting, check your direct messages.',
-                        color = utils.Colors.Blue
-                    ),
-                    ephemeral = True
-                )
-
-            except discord.errors.Forbidden:
-
+            await interaction.edit_original_message(
                 embed = discord.Embed(
-                    description = 'Seems like your direct messages are closed. Open them first to be able to start a bot.',
-                    color = utils.Colors.Red
+                    title = 'Start Bot',
+                    description = 'Starting...'
                 )
-                embed.set_footer(text = 'Settings > Privacy & Safety > Allow direct messages from server members')
-
-                await accounts.update_one(
-                    filter = {
-                        'account_id': session.auth['account_id']
-                    },
-                    update = {
-                        'in_use': False
-                    }
-                )
-
-                return await ctx.respond(
-                    embed = embed   
-                )
-
-            initialize = await session.initialize()
-
-            if initialize != True:
-
-                await accounts.update_one(
-                    filter = {
-                        'account_id': session.auth['account_id']
-                    },
-                    update = {
-                        'in_use': False
-                    }
-                )
-
-                return await message.edit(
-                    embed = discord.Embed(
-                        title = 'Unable to start',
-                        description = f'An error ocurred starting your bot. {initialize}',
-                        color = utils.Colors.Red
-                    )
-                )
-
-            embed = discord.Embed(
-                title = 'Your bot is ready!',
-                description = f'Your bot `{session.client.user.display_name}` is ready.',
-                color = utils.Colors.Green
             )
-            embed.set_footer(text = 'Type help for a list of commands')
+        
+        session = sessions.Session(
+            ctx = ctx,
+            account = {
+                'device_id': crypto.decrypt_user_string(ctx.author.id, self.bot.ekey, selected_account['device_id']),
+                'account_id': crypto.decrypt_user_string(ctx.author.id, self.bot.ekey, selected_account['account_id']),
+                'secret': crypto.decrypt_user_string(ctx.author.id, self.bot.ekey, selected_account['secret']),
+            }
+        )
+        add_session = self.bot.sessions.add_session(session)
 
-            await message.edit(embed = embed)
-
-        except:
-
-            log.error(f'Unable to start bot. {traceback.format_exc()}')
-
-            await accounts.update_one(
-                filter = {
-                    'account_id': session.auth['account_id']
-                },
-                update = {
-                    'in_use': False
-                }
-            )
-
-            return await ctx.respond(
+        if add_session != True:
+            await ctx.interaction.edit_original_message(
                 embed = discord.Embed(
-                    description = 'An unknown error ocurred, check logs for more info.',
-                    color = utils.Colors.Red
-                )
+                    title = 'Start Bot',
+                    description = 'An error ocurred registering your session, please try again later.',
+                    color = discord.Color.red()
+                ),
+                view = None
+            )
+            return
+
+        start = await session.start()
+
+        if start == True:
+
+            await ctx.interaction.edit_original_message(
+                embed = discord.Embed(
+                    title = 'Start Bot',
+                    description = 'Your bot has been started.',
+                    color = discord.Color.green()
+                ),
+                view = None
             )
 
+        else:
+
+            await ctx.interaction.edit_original_message(
+                embed = discord.Embed(
+                    title = 'Start Bot',
+                    description = f'An error ocurred starting your bot: `{start}`',
+                    color = discord.Color.red()
+                ),
+                view = None
+            )
 
     @slash_command(
         name = 'stop',
@@ -177,40 +174,30 @@ class Sessions(commands.Cog):
         ctx: discord.ApplicationContext
     ):
 
-        for session in self.bot.sessions:
-            if session.user.id == ctx.author.id:
-
-                await ctx.defer()
-
-                accounts = await self.bot.database.get_collection('accounts')
-
-                # stop session
-                await session.stop()
-
-                # remove from sessions manager
-                self.bot.sessions.remove_session(session)
-
-                # make the account usable again
-                await accounts.update_one(
-                    filter = {
-                        'account_id': session.auth['account_id']
-                    },
-                    update = {
-                        'in_use': False
-                    }
+        user_session = self.bot.sessions.get_session(ctx.author.id)
+        if user_session == None:
+            await ctx.respond(
+                embed = discord.Embed(
+                    description = 'Seems like you don\'t have any active bot right now.',
+                    color = utils.Colors.Red
                 )
+            )
+            return
 
-                return await ctx.respond(
-                    embed = discord.Embed(
-                        description = 'Your bot was stopped correctly.',
-                        color = utils.Colors.Green
-                    )
-                )
+        await ctx.defer()
+
+        accounts = await self.bot.database.get_collection('accounts')
+
+        # stop session
+        await user_session.stop()
+
+        # delete session from SessionManager
+        self.bot.sessions.remove_session(user_session)
 
         await ctx.respond(
             embed = discord.Embed(
-                description = 'Seems like you don\'t have any active bot right now.',
-                color = utils.Colors.Red
+                description = 'Your bot was stopped correctly.',
+                color = utils.Colors.Green
             )
         )
 

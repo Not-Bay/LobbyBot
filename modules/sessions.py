@@ -4,8 +4,7 @@ import logging
 import asyncio
 import time
 
-from .fortnite import FortniteClient
-from .utils import get_future_result
+from clients import fortniteclient
 
 log = logging.getLogger('LobbyBot.modules.session')
 
@@ -26,25 +25,27 @@ class Session:
         self.client = None # fortnite client
         self.task = None # fortnite client task
 
+    @property
     def identifier(self):
         try:
             return self.user.id
         except:
             return self
 
-    async def initialize(self):
+    async def start(self):
 
-        log.debug(f'[{self.identifier()}] initializing...')
+        log.debug(f'[{self.identifier}] starting...')
 
         # check if there is config to override (custom config)
         if self.override_config != None:
             self.config.update(self.override_config)
-            log.debug(f'[{self.identifier()}] default config overrided')
+            log.debug(f'[{self.identifier}] default config overrided')
 
-        client = FortniteClient(self)
+        client = fortniteclient.Client(self)
+        client.add_event_handler('handle_message', fortniteclient.handle_message)
         task = asyncio.create_task(client.start())
 
-        log.debug(f'[{self.identifier()}] waiting for event_ready...')
+        log.debug(f'[{self.identifier}] waiting for event_ready...')
 
         login_timeout = self.config.get('login_timeout', 10)
         try:
@@ -62,12 +63,12 @@ class Session:
 
             task_result = get_future_result(task)
 
-            log.error(f'[{self.identifier()}] event_ready was never dispatched after {login_timeout} seconds. {task_result}')
+            log.error(f'[{self.identifier}] event_ready was never dispatched after {login_timeout} seconds. {task_result}')
             return task_result
 
     async def stop(self):
 
-        log.debug(f'[{self.identifier()}] stopping...')
+        log.debug(f'[{self.identifier}] stopping...')
 
         close_task = asyncio.create_task(self.client.close())
 
@@ -88,38 +89,34 @@ class Session:
 
             task_result = get_future_result(close_task)
 
-            log.error(f'[{self.identifier()}] event_before_close was never dispatched after {logout_timeout} seconds. {task_result}')
+            log.error(f'[{self.identifier}] event_before_close was never dispatched after {logout_timeout} seconds. {task_result}')
             return task_result
 
     async def message_handler(self):
 
-        log.debug(f'[{self.identifier()}] Message handler started.')
-
-        # process only private messages from user
-        def check(message: discord.Message):
-            return message.author.id == self.user.id and message.channel.is_private() == True
+        log.debug(f'[{self.identifier}] Message handler started.')
 
         message_timeout = self.config.get('message_timeout', 300)
 
-        while True:
+        while self.client.is_ready():
 
             try:
                 message = await self.bot.wait_for(
                     event = 'message',
-                    check = check,
+                    check = lambda m: m.author.id == self.user.id,
                     timeout = message_timeout
                 )
-                log.debug(f'[{self.identifier()}] received message, sending to client message_handler...')
-                asyncio.create_task(self.client.handle_message(message))
+                log.debug(f'[{self.identifier}] received message, sending to client message_handler...')
+                self.client.dispatch_event('handle_message', self.client, message)
 
             except asyncio.TimeoutError:
 
-                log.debug(f'[{self.identifier()}] no messages received after {message_timeout} seconds.')
+                log.debug(f'[{self.identifier}] no messages received after {message_timeout} seconds.')
                 await self.stop()
 
                 break
 
-        log.debug(f'[{self.identifier()}] Message handler finished.')
+        log.debug(f'[{self.identifier}] Message handler finished.')
 
 class SessionManager:
     def __init__(self, max_sessions: int, allow_new_sessions: bool = True) -> None:
@@ -150,9 +147,18 @@ class SessionManager:
             self.sessions[str(session.user.id)] = session
             return True
 
-    def remove_session(self, session: Session) -> bool:
+    def remove_session(self, session: Session) -> None:
 
-        if self.get_session(session.user.id) == None:
-            return False
-        else:
-            return self.sessions.pop(session, None)
+        del self.sessions[str(session.user.id)]
+
+
+def get_future_result(future: asyncio.Future) -> any:
+
+    if future.exception() != None:
+        return future.exception()
+
+    try:
+        return future.result()
+
+    except asyncio.CancelledError:
+        return None
