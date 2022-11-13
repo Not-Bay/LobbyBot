@@ -10,8 +10,6 @@ import random
 import json
 import ast
 
-from modules import webhook
-
 bot_version = '1.7'
 
 premium_requirement = False

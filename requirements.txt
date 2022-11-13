@@ -1,7 +1,7 @@
-discord.py
+discord.py==1.7.3
 fortnitepy
 crayons
 pymongo
 requests
 coloredlogs
-discord-components
+git+https://github.com/kiki7000/discord.py-components
