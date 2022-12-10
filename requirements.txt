@@ -4,4 +4,4 @@ crayons
 pymongo
 requests
 coloredlogs
-git+https://github.com/Huguitis/discord.py-components
+git+https://github.com/BayGamerYT/discord.py-components
